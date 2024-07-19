@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Deduplication</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .doc-container {
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .passage-container {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #eee;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .container {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mb-5">TREC iKAT ClueWeb22-B Deduplication Dashboard</h1>
+        
+        <form class="form-inline mb-4" method="get" action="/">
+            <div class="form-group mr-2">
+                <label for="num_docs">Number of Documents to Display: </label>
+                <input type="number" class="form-control ml-2" id="num_docs" name="num_docs" value="{{ num_docs }}">
+            </div>
+            <button type="submit" class="btn btn-primary">Apply</button>
+        </form>
+        
+        {% for doc_id, passages in doc_contents.items() %}
+        <div class="doc-container">
+            <h2>{{ doc_id }}</h2>
+            {% for passage_id, content in passages %}
+            <div class="passage-container">
+                <h5>Passage {{ passage_id }}</h5>
+                <p>{{ content }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+        
+        <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-center">
+                {% if page > 1 %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page - 1 }}&num_docs={{ num_docs }}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                {% endif %}
+                {% for i in range(1, total_docs + 1) %}
+                <li class="page-item {% if i == page %}active{% endif %}">
+                    <a class="page-link" href="?page={{ i }}&num_docs={{ num_docs }}">{{ i }}</a>
+                </li>
+                {% endfor %}
+                {% if page < total_docs %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page + 1 }}&num_docs={{ num_docs }}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
+
