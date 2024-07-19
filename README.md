@@ -40,6 +40,64 @@ python deduplicate.py --data-dir <data_directory> --bz2-file-lines <bz2_file_lin
 - `--num-perm` (optional): Number of permutations for MinHash (default is 128).
 - `--threshold` (optional): Similarity threshold for MinHash LSH (default is 0.9).
 
+### Offset Calculation Script
+
+The `calculate_offsets.py` script is designed to calculate and store offsets for bz2-compressed JSONL files. These offsets can be used to efficiently access specific lines within the bz2 files.
+
+#### Usage
+
+To run the offset calculation script, use the following command:
+
+```bash
+python calculate_offsets.py --data-dir <data_directory> --offset-file <output_offset_file.json>
+```
+#### Arguments
+- `--data-dir`: Directory containing bz2 files with JSONL data.
+- `--offset-file`: Output file to store the calculated offsets.
+
+### Sharding Script
+The `shard_dataset.py` script is designed to divide the iKAT dataset into multiple smaller files (shards) based on a consistent hash of the document IDs. If you find that you are running out of memory when trying to index the iKAT collection, you can shard the dataset and then index the shards individually. 
+
+#### Usage
+To run the sharding script, use the following command:
+```bash
+python shard_dataset.py --data-dir <data_directory> --shard-dir <shard_directory> [--id-field <id_field>] [--text-field <text_field>] [--num-shards <num_shards>]
+```
+#### Arguments
+- `--data-dir`: Directory containing bz2 files with JSONL data.
+- `--shard-dir`: Directory to save the shard files.
+- `--id-field` (optional): DocID field in data (default is doc_id).
+- `--text-field` (optional): Text field in data (default is contents).
+- `--num-shards` (optional): Number of shards to create (default is 4).
+
+#### Example usage
+Here's how you can create a SPLADE++ index using PyTerrier. 
+
+```python
+    for i, shard in enumerate(shards):
+        shard_index_name = f"{args.index_name}_shard_{i}"
+        shard_index_path = os.path.join(args.index_dir, shard_index_name)
+        os.makedirs(shard_index_path, exist_ok=True)
+
+        indexer = pt.index.IterDictIndexer(
+            index_path=shard_index_path,
+            fields=['text'],
+            pretokenised=True,
+            meta={'docno': 40, 'text': 10000}
+        )
+
+        indexer_pipe = splade.indexing() >> indexer
+
+        print(f'Starting to index shard {shard_index_name}...')
+        indexer_pipe.index(
+            iter(shard),
+            batch_size=args.batch_size
+        )
+        print(f'[Done] indexing shard {shard_index_name}.')
+```
+
+
+
 ### Creating a DeepCT index using PyTerrier
 
 The `ikat_deepct_index_creater.py` script is designed to create a PyTerrier DeepCT index for the iKAT dataset, processing documents stored in bz2-compressed JSONL files.
@@ -49,7 +107,7 @@ The `ikat_deepct_index_creater.py` script is designed to create a PyTerrier Deep
 To run the indexing script, use the following command:
 
 ```bash
-python indexing.py --bz2-dir <data_directory> --index-dir <index_directory> --bz2-file-lines <bz2_file_lines.json> [--batch-size <batch_size>] [--cuda <cuda_device>]
+python ikat_deepct_index_creater.py --bz2-dir <data_directory> --index-dir <index_directory> --bz2-file-lines <bz2_file_lines.json> [--batch-size <batch_size>] [--cuda <cuda_device>]
 ```
 #### Arguments
 - `--bz2-dir`: Directory containing bz2 files with JSONL data.
@@ -67,7 +125,7 @@ The `ikat_lucene_vector_indexing.py` script is designed to encode documents from
 To run the indexing script, use the following command:
 
 ```bash
-python indexing_lucene.py --data-dir <data_directory> --index-dir <index_directory> --bz2-file-lines <bz2_file_lines.json> [--batch-size <batch_size>] [--max-length <max_length>] [--device <device>]
+python ikat_lucene_vector_indexing.py --data-dir <data_directory> --index-dir <index_directory> --bz2-file-lines <bz2_file_lines.json> [--batch-size <batch_size>] [--max-length <max_length>] [--device <device>]
 ```
 #### Arguments
 - `--data-dir`: Path to the directory containing bz2 files with JSONL data.
@@ -86,7 +144,7 @@ The `ikat_splade_index_creater.py` script is designed to create a PyTerrier SPLA
 To run the indexing script, use the following command:
 
 ```bash
-python indexing_splade.py --bz2-dir <data_directory> --index-dir <index_directory> --bz2-file-lines <bz2_file_lines.json> [--batch-size <batch_size>]
+python ikat_splade_index_creater.py --bz2-dir <data_directory> --index-dir <index_directory> --bz2-file-lines <bz2_file_lines.json> [--batch-size <batch_size>]
 ```
 #### Arguments
 - `--bz2-dir`: Directory containing bz2 files with JSONL data.
