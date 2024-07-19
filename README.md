@@ -1,4 +1,4 @@
-# Code for TREC iKAT 2024 track.
+# Code for TREC iKAT 2024 track
 
 ## Recreating the Conda Environment
 
@@ -94,6 +94,16 @@ python indexing_splade.py --bz2-dir <data_directory> --index-dir <index_director
 - `--bz2-file-lines`: Path to the JSON file containing the number of lines in each bz2 file.
 - `--batch-size` (optional): Batch size for indexing (default is 200).
 
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/fooBar`)
+3. Commit your changes (`git commit -am 'Add some fooBar'`)
+4. Push to the branch (`git push origin feature/fooBar`)
+5. Create a new Pull Request
+   
+## License
+This project is licensed under the MIT License.
 
 
 
