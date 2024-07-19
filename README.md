@@ -118,7 +118,47 @@ python ikat_deepct_index_creater.py --bz2-dir <data_directory> --index-dir <inde
 
 ### Creating a dense vector index using Lucene 9.11.1 
 
-The `ikat_lucene_vector_indexing.py` script is designed to encode documents from bz2-compressed JSONL files using HuggingFace transformers and save the encoded document embeddings and metadata to a Lucene index.
+The `ikat_lucene_vector_indexing.py` script is designed to encode documents from bz2-compressed JSONL files using HuggingFace transformers and save the encoded document embeddings and metadata to a Lucene index. This script will index the documents using Lucene and store the embeddings in a retrievable format. With this setup, you can leverage the full power of Lucene through Python using Pyjnius.
+
+#### Setting Up Java and Pyjnius
+Make sure you have Java installed on your system and properly configured. Pyjnius will need to find your Java installation. You may need to set the `JAVA_HOME` environment variable to point to your JDK installation.
+
+To use Lucene with Pyjnius, you need to download the core Lucene JAR files and their dependencies. Specifically, you will need:
+1. Lucene Core JAR: This is the main library.
+2. Lucene Analysis Common JAR: Provides standard analyzers.
+3. Lucene Query Parser JAR: Enables the use of query parsing features.
+4. Lucene Backward Codecs JAR: Provides backward compatibility with older Lucene indexes.
+
+You can download these JAR files from the [Apache Lucene website](https://lucene.apache.org/core/downloads.html) or use Maven Central to get the latest versions. Here are the files you need to download:
+
+##### Required JAR Files
+- `lucene-core.jar`
+- `lucene-analyzers-common.jar`
+- `lucene-queryparser.jar`
+- `lucene-backward-codecs.jar`
+
+##### Steps to Download
+1. Visit the Lucene Download Page:
+   Go to the [Apache Lucene download page](https://lucene.apache.org/core/downloads.html).
+
+2. Download the Binaries:
+   Download the binary release (`lucene-9.11.1.tgz`).
+
+3. Extract the Archive:
+   Extract the downloaded archive to get the required JAR files. You can use a tool like `tar` or any other archive manager.
+   ```sh
+   tar -xvzf lucene-<version>-bin.tgz
+   ```
+4. Locate the JAR Files:
+   Navigate to the extracted directory, and you will find the JAR files in the `lucene-core-<version>.jar`, `lucene-analyzers-common-<version>.jar`, `lucene- 
+   queryparser-<version>.jar`, and `lucene-backward-codecs-<version>.jar`.
+   
+6. Include JARs in the Classpath:
+   Use these paths to set up the JVM classpath in your Python script. For example:
+   ```python
+   lucene_classpath = "/home/user/ikat/lucene_jar/lucene-9.11.1/modules/*"
+   jnius_config.set_classpath(lucene_classpath)
+   ```
 
 #### Usage
 
