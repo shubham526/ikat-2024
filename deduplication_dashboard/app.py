@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request
 import requests
+import json
 
 app = Flask(__name__)
 
@@ -20,9 +21,12 @@ def fetch_passage_content(doc_id, passage_id):
     url = f"https://ikat-searcher.grill.science/api/fulltext/{doc_id}/{passage_id}"
     response = requests.get(url)
     if response.status_code == 200:
-        return response.text
+        try:
+            return json.loads(response.text)
+        except json.JSONDecodeError:
+            return {"body": "Error parsing content"}
     else:
-        return "Error fetching content"
+        return {"body": "Error fetching content"}
 
 @app.route('/')
 def index():

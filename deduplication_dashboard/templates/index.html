@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document Deduplication</title>
+    <title>TREC iKAT ClueWeb22-B Deduplication Dashboard</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         .doc-container {
@@ -22,13 +22,25 @@
         .container {
             margin-top: 20px;
         }
+        pre {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .description {
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1 class="text-center mb-5">TREC iKAT ClueWeb22-B Deduplication Dashboard</h1>
+        <h1 class="text-center mb-4">TREC iKAT ClueWeb22-B Deduplication Dashboard</h1>
+        <div class="description text-center">
+            <p>This application helps to view the duplicate passages in the TREC iKAT ClueWeb22-B collection. You can specify the number of documents to review, and the application will display each document along with its associated duplicate passages.</p>
+            <p>To use this application, enter the number of documents you want to review in the input form below and click "Apply". Navigate through the documents using the pagination controls.</p>
+        </div>
         
-        <form class="form-inline mb-4" method="get" action="/">
+        <form class="form-inline mb-4 justify-content-center" method="get" action="/">
             <div class="form-group mr-2">
                 <label for="num_docs">Number of Documents to Display: </label>
                 <input type="number" class="form-control ml-2" id="num_docs" name="num_docs" value="{{ num_docs }}">
@@ -42,7 +54,9 @@
             {% for passage_id, content in passages %}
             <div class="passage-container">
                 <h5>Passage {{ passage_id }}</h5>
-                <p>{{ content }}</p>
+                <div><strong>Title:</strong> {{ content.get('title', 'N/A') }}</div>
+                <div><strong>URL:</strong> <a href="{{ content.get('url', '#') }}" target="_blank">{{ content.get('url', 'N/A') }}</a></div>
+                <div><strong>Body:</strong> <pre>{{ content.get('body', 'N/A') }}</pre></div>
             </div>
             {% endfor %}
         </div>
