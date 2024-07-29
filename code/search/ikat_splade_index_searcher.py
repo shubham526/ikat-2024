@@ -13,7 +13,22 @@ import pyt_splade
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-def retrieve_documents(index_dir, queries_file, output_file, run_id="PyTerrier-SPLADE++"):
+def write_to_file(all_results, run, run_id):
+    # Concatenate all results into a single DataFrame
+    all_results_df = pd.concat(all_results, ignore_index=True)
+
+    # Select and rename the necessary columns to TREC format
+    all_results_df = all_results_df[['qid', 'docno', 'rank', 'score']]
+    all_results_df['Q0'] = 'Q0'
+    all_results_df['tag'] = run_id
+
+    # Reorder columns to match TREC format
+    trec_results = all_results_df[['qid', 'Q0', 'docno', 'rank', 'score', 'tag']]
+
+    # Save to TREC file
+    trec_results.to_csv(run, sep=' ', header=False, index=False)
+
+def retrieve_documents(index_dir, queries_file):
     factory = pyt_splade.SpladeFactory()
 
     # Set up the BatchRetrieve component
@@ -33,23 +48,14 @@ def retrieve_documents(index_dir, queries_file, output_file, run_id="PyTerrier-S
     # Retrieve results for each query
     for _, row in tqdm(queries.iterrows(), total=queries.shape[0], desc="Processing queries"):
         query = row['query']
-        results = retr_pipe.search(query)
-        # logger.info(f"Found {len(results)} documents for query {query}")
-        all_results.append(results)
+        try:
+            results = retr_pipe.search(query)
+            all_results.append(results)
+        except ValueError as e:
+            print(f"Error: {e}")
+            print(f"Skipping this query: {query}")
 
-    # Concatenate all results into a single DataFrame
-    all_results_df = pd.concat(all_results, ignore_index=True)
-
-    # Select and rename the necessary columns to TREC format
-    all_results_df = all_results_df[['qid', 'docno', 'rank', 'score']]
-    all_results_df['Q0'] = 'Q0'
-    all_results_df['tag'] = run_id
-
-    # Reorder columns to match TREC format
-    trec_results = all_results_df[['qid', 'Q0', 'docno', 'rank', 'score', 'tag']]
-
-    # Save to TREC file
-    trec_results.to_csv(output_file, sep=' ', header=False, index=False)
+    return all_results
 
 def main():
     parser = argparse.ArgumentParser(description="Retrieve documents from SPLADE index and write to TREC-style run file.")
@@ -58,11 +64,10 @@ def main():
     parser.add_argument("--run", help='Output file to save the TREC-style results.', required=True)
     args = parser.parse_args()
 
-    retrieve_documents(
-        index_dir=args.index_dir,
-        queries_file=args.queries,
-        output_file=args.run
-    )
+    all_results = retrieve_documents(index_dir=args.index_dir, queries_file=args.queries)
+    logger.info(f"Writing results to {args.run}")
+    write_to_file(all_results=all_results, run=args.run, run_id='Pyterrier-SPLADE++')
+    logger.info("Done")
 
 if __name__ == '__main__':
     main()
