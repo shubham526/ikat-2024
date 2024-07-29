@@ -62,6 +62,7 @@ def search_index(args):
     device = torch.device(args.device)
     model.to(device)
     logger.info(f"Using device {args.device}.")
+    logger.info(f"Retrieving {args.k} documents from {args.index_dir}.")
 
     queries = load_queries(args.queries)
     query_texts = queries['query'].tolist()
@@ -72,8 +73,9 @@ def search_index(args):
         for query_id, query_vector in zip(queries['query_id'], query_embeddings):
             java_query_vector = numpy_to_java_float_array(query_vector)
             query = KnnFloatVectorQuery("content_vector", java_query_vector, 1)
-            top_docs = searcher.search(query, 100)
+            top_docs = searcher.search(query, args.k)
             hits = top_docs.scoreDocs
+            logger.info(f"Found {len(hits)} hits for query {query_id}.")
 
             for rank, hit in enumerate(hits):
                 doc = searcher.storedFields().document(hit.doc)
@@ -86,6 +88,7 @@ def main():
     parser.add_argument('--index-dir', help='Path to the Lucene index directory.', required=True)
     parser.add_argument('--queries', help='TSV file containing queries.', required=True)
     parser.add_argument('--run', help='Output file for TREC format run results.', required=True)
+    parser.add_argument('--k', help='Number of documents to retrieve. Default=1000.', default=1000, type=int)
     parser.add_argument("--device", help='Device to use for computation (e.g., "cpu", "cuda").', default='cpu', type=str)
     parser.add_argument("--max-length", help='Maximum length for model inputs. Default: 512.', default=512, type=int)
 
@@ -97,3 +100,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
