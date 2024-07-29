@@ -18,7 +18,7 @@ def retrieve_documents(
         b,
         mu,
         top_k,
-        run_id="Pyserini-Run",
+        run_id,
 ):
     # Initialize the Pyserini searcher
     searcher = LuceneSearcher(index_dir)
@@ -75,6 +75,7 @@ def main():
     parser.add_argument("--b", help='BM25 b parameter.', type=float, default=0.4)
     parser.add_argument("--mu", help='QL mu parameter.', type=float, default=1000)
     parser.add_argument("--hits", help='Number of hits to retrieve for each query.', type=int, default=1000)
+    parser.add_argument("--tag", help='Tag for the run. Default: Pyserini-Run', type=str, default='Pyserini-Run')
     args = parser.parse_args()
 
     retrieve_documents(
@@ -85,9 +86,11 @@ def main():
         k1=args.k1,
         b=args.b,
         mu=args.mu,
-        top_k=args.hits
+        top_k=args.hits,
+        run_id=args.tag
     )
 
 
 if __name__ == '__main__':
     main()
+
