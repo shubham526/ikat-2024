@@ -17,6 +17,9 @@ def write_to_file(all_results, run, run_id):
     # Concatenate all results into a single DataFrame
     all_results_df = pd.concat(all_results, ignore_index=True)
 
+    # Increment the rank by 1 to start from 1 instead of 0
+    all_results_df['rank'] = all_results_df['rank'] + 1
+
     # Select and rename the necessary columns to TREC format
     all_results_df = all_results_df[['qid', 'docno', 'rank', 'score']]
     all_results_df['Q0'] = 'Q0'
@@ -47,9 +50,11 @@ def retrieve_documents(index_dir, queries_file):
 
     # Retrieve results for each query
     for _, row in tqdm(queries.iterrows(), total=queries.shape[0], desc="Processing queries"):
+        qid = row['qid']
         query = row['query']
         try:
             results = retr_pipe.search(query)
+            results['qid'] = qid  # Ensure original qid is added to the results
             all_results.append(results)
         except ValueError as e:
             print(f"Error: {e}")
@@ -71,3 +76,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
