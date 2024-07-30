@@ -67,12 +67,26 @@ def retrieve_documents(index_dir, queries_file, ret_model):
 
 def main():
     parser = argparse.ArgumentParser(description="Retrieve documents from SPLADE index and write to TREC-style run file.")
-    parser.add_argument("--index-dir", help='Directory where SPLADE index is stored.', required=True)
-    parser.add_argument("--queries", help='TSV file containing query_id and query.', required=True)
-    parser.add_argument("--run", help='Output file to save the TREC-style results.', required=True)
-    parser.add_argument("--ret-model", help='Retrieval model to use (BM25|DPH|PL2|DirichletLM|Tf). Default: Tf', type=str, default='Tf')
-    parser.add_argument("--tag", help='Tag for the TREC run file. Default: PyTerrier-SPLADE++',
-                        type=str, default='PyTerrier-SPLADE++')
+    parser.add_argument("--index-dir", 
+                        help='Directory where SPLADE index is stored.', 
+                        required=True)
+    parser.add_argument("--queries", 
+                        help='TSV file containing query_id and query.', 
+                        required=True)
+    parser.add_argument("--run", 
+                        help='Output file to save the TREC-style results.', 
+                        required=True)
+    parser.add_argument("--ret-model", 
+                        help='The name of the weighting model. '
+                             'Valid values are the Java class name of any Terrier weighting model. '
+                             'Terrier provides many, such as "BM25", "PL2". '
+                             'Default: Tf', 
+                        type=str, 
+                        default='Tf')
+    parser.add_argument("--tag", 
+                        help='Tag for the TREC run file. Default: PyTerrier-SPLADE++',
+                        type=str, 
+                        default='PyTerrier-SPLADE++')
     args = parser.parse_args()
 
     all_results = retrieve_documents(index_dir=args.index_dir, queries_file=args.queries, ret_model=args.ret_model)
