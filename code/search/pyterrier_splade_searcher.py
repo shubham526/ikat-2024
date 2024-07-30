@@ -31,11 +31,14 @@ def write_to_file(all_results, run, run_id):
     # Save to TREC file
     trec_results.to_csv(run, sep=' ', header=False, index=False)
 
-def retrieve_documents(index_dir, queries_file):
+def retrieve_documents(index_dir, queries_file, ret_model):
+
+    logger.info(f'Retrieving documents from {index_dir}')
+    logger.info(f'Using retrieval model {ret_model}')
     factory = pyt_splade.SpladeFactory()
 
     # Set up the BatchRetrieve component
-    br = pt.BatchRetrieve(index_dir, wmodel='Tf')
+    br = pt.BatchRetrieve(index_dir, wmodel=ret_model)
 
     # Assuming factory is already defined and query_splade is your query encoder
     query_splade = factory.query()
@@ -67,11 +70,14 @@ def main():
     parser.add_argument("--index-dir", help='Directory where SPLADE index is stored.', required=True)
     parser.add_argument("--queries", help='TSV file containing query_id and query.', required=True)
     parser.add_argument("--run", help='Output file to save the TREC-style results.', required=True)
+    parser.add_argument("--ret-model", help='Retrieval model to use (BM25|DPH|PL2|DirichletLM|Tf). Default: Tf', type=str, default='Tf')
+    parser.add_argument("--tag", help='Tag for the TREC run file. Default: PyTerrier-SPLADE++',
+                        type=str, default='PyTerrier-SPLADE++')
     args = parser.parse_args()
 
-    all_results = retrieve_documents(index_dir=args.index_dir, queries_file=args.queries)
+    all_results = retrieve_documents(index_dir=args.index_dir, queries_file=args.queries, ret_model=args.ret_model)
     logger.info(f"Writing results to {args.run}")
-    write_to_file(all_results=all_results, run=args.run, run_id='Pyterrier-SPLADE++')
+    write_to_file(all_results=all_results, run=args.run, run_id=args.tag)
     logger.info("Done")
 
 if __name__ == '__main__':
