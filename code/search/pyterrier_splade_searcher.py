@@ -31,10 +31,11 @@ def write_to_file(all_results, run, run_id):
     # Save to TREC file
     trec_results.to_csv(run, sep=' ', header=False, index=False)
 
-def retrieve_documents(index_dir, queries_file, ret_model):
+def retrieve_documents(index_dir, queries_file, ret_model, hits):
 
     logger.info(f'Retrieving documents from {index_dir}')
     logger.info(f'Using retrieval model {ret_model}')
+    logger.info(f'Retrieving {hits} documents per query')
     factory = pyt_splade.SpladeFactory()
 
     # Set up the BatchRetrieve component
@@ -56,7 +57,7 @@ def retrieve_documents(index_dir, queries_file, ret_model):
         qid = row['qid']
         query = row['query']
         try:
-            results = retr_pipe.search(query)
+            results = retr_pipe.search(query, num_results=hits)
             results['qid'] = qid  # Ensure original qid is added to the results
             all_results.append(results)
         except ValueError as e:
@@ -67,29 +68,39 @@ def retrieve_documents(index_dir, queries_file, ret_model):
 
 def main():
     parser = argparse.ArgumentParser(description="Retrieve documents from SPLADE index and write to TREC-style run file.")
-    parser.add_argument("--index-dir", 
-                        help='Directory where SPLADE index is stored.', 
+    parser.add_argument("--index-dir",
+                        help='Directory where SPLADE index is stored.',
                         required=True)
-    parser.add_argument("--queries", 
-                        help='TSV file containing query_id and query.', 
+    parser.add_argument("--queries",
+                        help='TSV file containing query_id and query.',
                         required=True)
-    parser.add_argument("--run", 
-                        help='Output file to save the TREC-style results.', 
+    parser.add_argument("--run",
+                        help='Output file to save the TREC-style results.',
                         required=True)
-    parser.add_argument("--ret-model", 
+    parser.add_argument("--ret-model",
                         help='The name of the weighting model. '
                              'Valid values are the Java class name of any Terrier weighting model. '
                              'Terrier provides many, such as "BM25", "PL2". '
-                             'Default: Tf', 
-                        type=str, 
+                             'Default: Tf',
+                        type=str,
                         default='Tf')
-    parser.add_argument("--tag", 
+    parser.add_argument("--tag",
                         help='Tag for the TREC run file. Default: PyTerrier-SPLADE++',
-                        type=str, 
-                        default='PyTerrier-SPLADE++')
+                        type=str,
+                        default='PyTerrier-SPLADE-Tf')
+    parser.add_argument("--hits",
+                        help='Number of hits to retrieve for each query.',
+                        type=int,
+                        default=1000)
     args = parser.parse_args()
 
-    all_results = retrieve_documents(index_dir=args.index_dir, queries_file=args.queries, ret_model=args.ret_model)
+    all_results = retrieve_documents(
+        index_dir=args.index_dir,
+        queries_file=args.queries,
+        ret_model=args.ret_model,
+        hits=args.hits
+    )
+
     logger.info(f"Writing results to {args.run}")
     write_to_file(all_results=all_results, run=args.run, run_id=args.tag)
     logger.info("Done")
